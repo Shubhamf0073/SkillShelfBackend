@@ -1,35 +1,51 @@
-import pandas as pd
 import numpy as np
-import tensorflow as tf
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import LabelEncoder
-from model import create_model
+import pandas as pd
+from model import NeuralNetwork
 
-# Load the dataset
-data = pd.read_csv('../dataset/PreprocessedDataset.csv')
+dataset_path = "/Users/shubhamfufal/Documents/Skill Shelf/recommender-system-project/dataset/PreprocessedDataset.csv"
+data = pd.read_csv(dataset_path)
 
-# Preprocess the data
-X = data[['course_name', 'university', 'difficulty_level', 'course_rating', 'skills']]
-y = data['course_url']  # Assuming we want to predict course URLs
+# Define features and target
+features = [
+    'difficulty_level_encoded',
+    'course_rating',
+    'description_word_count',
+    'about_length',
+    'course_description_length',
+    # Add more features as needed
+]
+target = 'course_name'  # Assuming 'course_name' is a unique identifier for each course
 
-# Encode categorical features
-label_encoders = {}
-for column in X.select_dtypes(include=['object']).columns:
-    le = LabelEncoder()
-    X[column] = le.fit_transform(X[column])
-    label_encoders[column] = le
+# Prepare the data
+X = data[features].values
+y = pd.factorize(data[target])[0].reshape(-1, 1)  # Convert course names to numerical labels
 
-# Split the dataset into training and testing sets
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# One-hot encode the target variable
+y_one_hot = np.zeros((y.size, y.max() + 1))
+y_one_hot[np.arange(y.size), y.flatten()] = 1
 
-# Create the model
-model = create_model(input_shape=X_train.shape[1:])
+# Normalize the data (optional)
+X = (X - np.min(X, axis=0)) / (np.max(X, axis=0) - np.min(X, axis=0))
 
-# Compile the model
-model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+# Initialize the neural network
+input_size = X.shape[1]
+hidden_size = 10  # You can adjust this value
+output_size = y_one_hot.shape[1]  # Number of unique courses
+nn = NeuralNetwork(input_size=input_size, hidden_size=hidden_size, output_size=output_size)
 
-# Train the model
-model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_test, y_test))
+# Train the neural network
+nn.train(X, y_one_hot)
 
-# Save the model
-model.save('recommender_model.h5')
+# Save the trained model
+nn.save_model('neural_network_model.pkl')
+
+# Make predictions
+predictions = nn.predict(X)
+print("Predictions:", predictions)
+
+# Evaluate the model (optional)
+def evaluate(predictions, y):
+    accuracy = np.mean(predictions == y.flatten())
+    print(f"Accuracy: {accuracy * 100:.2f}%")
+
+evaluate(predictions, y)

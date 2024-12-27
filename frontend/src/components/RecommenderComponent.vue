@@ -1,17 +1,9 @@
 <template>
-  <div class="recommender">
-    <h1>Recommender System</h1>
-    <div>
-      <label for="input">Enter your preferences:</label>
-      <input type="text" v-model="userInput" id="input" />
-      <button @click="getRecommendations">Get Recommendations</button>
-    </div>
-    <div v-if="recommendations.length">
-      <h2>Recommendations:</h2>
-      <ul>
-        <li v-for="(item, index) in recommendations" :key="index">{{ item }}</li>
-      </ul>
-    </div>
+  <div>
+    <h2>Recommended Courses</h2>
+    <ul>
+      <li v-for="course in courses" :key="course.id">{{ course.course_name }}</li>
+    </ul>
   </div>
 </template>
 
@@ -19,26 +11,31 @@
 export default {
   data() {
     return {
-      userInput: '',
-      recommendations: []
+      courses: [],
     };
   },
+  created() {
+    this.fetchCourses();
+  },
   methods: {
-    async getRecommendations() {
+    async fetchCourses() {
       try {
-        const response = await fetch(`http://localhost:8000/api/recommend?input=${this.userInput}`);
-        const data = await response.json();
-        this.recommendations = data.recommendations;
+        const response = await fetch('http://localhost:8000/api/courses/');
+        this.courses = await response.json();
       } catch (error) {
-        console.error('Error fetching recommendations:', error);
+        console.error('Error fetching courses:', error);
       }
-    }
-  }
+    },
+  },
 };
 </script>
 
 <style scoped>
-.recommender {
-  padding: 20px;
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+li {
+  margin: 5px 0;
 }
 </style>

@@ -1,25 +1,25 @@
 <template>
   <div class="home">
-    <h1>Welcome to the Recommender System</h1>
-    <p>Explore our recommendations based on your preferences!</p>
+    <h1>Recommender System</h1>
     <RecommenderComponent />
   </div>
 </template>
 
 <script>
-import RecommenderComponent from '../components/RecommenderComponent.vue';
+import RecommenderComponent from '@/components/RecommenderComponent.vue';
 
 export default {
   name: 'HomeView',
   components: {
-    RecommenderComponent
-  }
+    RecommenderComponent,
+  },
 };
 </script>
 
 <style scoped>
 .home {
-  text-align: center;
-  margin-top: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 </style>
